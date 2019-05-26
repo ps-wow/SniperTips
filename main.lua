@@ -40,10 +40,6 @@ function SniperTips:GetVersion()
   return MAJOR, MINOR
 end
 
-function SniperTips:DebugMessage(message)
-  DEFAULT_CHAT_FRAME:AddMessage(message);
-end
-
 function SniperTips:AddItemHandler(Addon)
   table.insert(SniperTips.handlers.items, Addon.name)
 end
@@ -165,26 +161,16 @@ SniperTips.frame:RegisterEvent("VARIABLES_LOADED");
 
 -- Other Addon Stuff
 
-SniperTips:DebugMessage('SniperTips: Registering Event');
-
--- OnTooltipCleared
-
 function SniperTips:HandleItem(self,link,linkType,id)
-  SniperTips:DebugMessage('Handling item')
   local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
   itemEquipLoc, itemIcon, itemSellPrice, itemClassID, itemSubClassID, bindType, expacID, itemSetID, 
   isCraftingReagent = GetItemInfo(link);
 
   for _, addonName in ipairs(SniperTips.handlers.items) do
-    SniperTips:DebugMessage('Handling item tooltip with ' .. addonName)
     a = LibStub("AceAddon-3.0"):GetAddon(addonName);
-    DEFAULT_CHAT_FRAME:AddMessage(itemSellPrice)
     a:HandleItem(self, itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
     itemEquipLoc, itemIcon, itemSellPrice, itemClassID, itemSubClassID, bindType, expacID, itemSetID, 
     isCraftingReagent)
     --handler(GetItemInfo(link))
   end
 end
-
--- Final Debug: Output message saying lib loaded
-SniperTips:DebugMessage('ST Loaded');
