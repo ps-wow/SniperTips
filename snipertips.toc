@@ -1,5 +1,5 @@
 ## Interface: 80100
-## Version: 0.0.1
+## Version: 1.0.0
 ## Title: SniperTips
 ## Author: PrivateSniper
 ## Notes: Library for Tooltip Text management.
