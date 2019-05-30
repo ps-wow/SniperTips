@@ -1,10 +1,17 @@
 -- Library Version
 local MAJOR, MINOR = 1, 0
-
 local SniperTips = LibStub:NewLibrary("SniperTips-1.0", MAJOR, MINOR);
+
+SniperTips.kbDEBUG = true
 
 if not SniperTips then
   return	-- already loaded and no upgrade necessary
+end
+
+function SniperTips:Dump(str, obj)
+  if ViragDevTool_AddData and SniperTips.kbDEBUG then 
+      ViragDevTool_AddData(obj, str) 
+  end
 end
 
 SniperTips.handlers = SniperTips.handlers or {}
@@ -88,12 +95,21 @@ end
 local function SetHyperlink_Hook(self,hyperLink)
 	if (cfg.if_enable) and (not tipDataAdded[self]) then
 		local refString = hyperLink:match("|H([^|]+)|h") or hyperLink;
-		local linkType = refString:match("^[^:]+");
-    -- Call Tip Type Func
-		-- if (LinkTypeFuncs[linkType]) and (self:NumLines() > 0) then
-		-- 	tipDataAdded[self] = "hyperlink";
-		-- 	LinkTypeFuncs[linkType](self,refString,(":"):split(refString));
-		-- end
+    local linkType = refString:match("^[^:]+");
+    
+    SniperTips:Dump('linkType', linkType)
+
+    -- Call Relevant handler
+
+    -- Only add to the tooltip if it has lines?
+    if (self:NumLines() > 0) then
+      if (linkType == 'item') then
+        tipDataAdded[self] = "hyperlink";
+        SniperTips:HandleItem(self,refString,(":"):split(refString));
+      elseif (linkType == 'achievement') then
+      else
+      end
+    end
 	end
 end
 
