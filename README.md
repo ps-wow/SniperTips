@@ -1,5 +1,6 @@
 # SniperTips
 
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/ps-wow/SniperTips.svg)
 
 A tooltip framework for adding information onto tooltips.
