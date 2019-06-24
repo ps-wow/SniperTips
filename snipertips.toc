@@ -3,7 +3,7 @@
 ## Title: SniperTips
 ## Author: PrivateSniper
 ## Notes: Library for Tooltip Text management.
-## Dependencies: Ace3
+## OptionalDeps: Ace3
 
 Libs\LibStub\LibStub.lua
 main.lua
