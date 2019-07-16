@@ -1,6 +1,8 @@
+-- SniperTips Library
+
 -- Library Version
 local MAJOR, MINOR = 1, 0
-local SniperTips = LibStub:NewLibrary("SniperTips-1.0", MAJOR, MINOR);
+local SniperTips = LibStub:NewLibrary("SniperTips-2.0", MAJOR, MINOR);
 
 SniperTips.kbDEBUG = true
 
@@ -16,6 +18,10 @@ end
 
 SniperTips.handlers = SniperTips.handlers or {}
 SniperTips.handlers.items = SniperTips.handlers.items or {}
+SniperTips.handlers.spells = SniperTips.handlers.spells or {}
+SniperTips.handlers.units = SniperTips.handlers.units or {}
+SniperTips.handlers.buffs = SniperTips.handlers.buffs or {}
+SniperTips.handlers.debuffs = SniperTips.handlers.debuffs or {}
 
 if not SniperTips.frame then
   SniperTips.frame=CreateFrame("Frame", SniperTips)
@@ -51,9 +57,25 @@ function SniperTips:AddItemHandler(Addon)
   table.insert(SniperTips.handlers.items, Addon.name)
 end
 
+function SniperTips:AddSpellHandler(Addon)
+  table.insert(SniperTips.handlers.spells, Addon.name)
+end
+
+function SniperTips:AddUnitHandler(Addon)
+  table.insert(SniperTips.handlers.units, Addon.name)
+end
+
+function SniperTips:AddBuffHandler(Addon)
+  table.insert(SniperTips.handlers.buffs, Addon.name)
+end
+
+function SniperTips:AddDebuffHandler(Addon)
+  table.insert(SniperTips.handlers.debuffs, Addon.name)
+end
+
 -- OnTooltipSetItem
 local function OnTooltipSetItem(self,...)
-  if (cfg.if_enable) and (not tipDataAdded[self]) then
+  if (not tipDataAdded[self]) then
     local _, link = self:GetItem();
     if (link) then
       local linkType, id = link:match("H?(%a+):(%d+)");
@@ -61,6 +83,32 @@ local function OnTooltipSetItem(self,...)
         tipDataAdded[self] = linkType;
         SniperTips:HandleItem(self,link,linkType,id);
       end
+    end
+  end
+end
+
+local function OnTooltipSetSpell(self,...)
+  if (not tipDataAdded[self]) then
+    local spell, id = self:GetSpell();
+    SniperTips:HandleSpell(self,spell,id)
+  end
+end
+
+local function OnTooltipSetUnit(self,...)
+  if (not tipDataAdded[self]) then
+    local name, unit = self:GetUnit();
+    SniperTips:HandleUnit(self,name,unit)
+  end
+end
+
+local function SetUnitAura(self,unit,index,filter)
+  if (not tipDataAdded[self]) then
+    if (filter == 'HELPFUL') then
+      SniperTips:HandleBuff(self, unit, index)
+    elseif (filter == 'PASSIVE') then
+      SniperTips:Dump('handling passive', true)
+    else
+      SniperTips:HandleDebuff(self, unit, index)
     end
   end
 end
@@ -93,11 +141,9 @@ end
 
 -- HOOK: ItemRefTooltip + GameTooltip: SetHyperlink
 local function SetHyperlink_Hook(self,hyperLink)
-  if (cfg.if_enable) and (not tipDataAdded[self]) then
+  if (not tipDataAdded[self]) then
     local refString = hyperLink:match("|H([^|]+)|h") or hyperLink;
     local linkType = refString:match("^[^:]+");
-
-    SniperTips:Dump('linkType', linkType)
 
     -- Call Relevant handler
 
@@ -118,11 +164,11 @@ end
 function SniperTips.frame:DoHooks()
   for index, tip in ipairs(tooltipTypes) do
     if (type(tip) == "table") and (type(tip.GetObjectType) == "function") and (tip:GetObjectType() == "GameTooltip") then
-      -- if (tipsToAddIcon[tip:GetName()]) then
-      --   self:CreateTooltipIcon(tip);
-      -- end
       hooksecurefunc(tip,"SetHyperlink",SetHyperlink_Hook);
       tip:HookScript("OnTooltipSetItem",OnTooltipSetItem);
+      tip:HookScript("OnTooltipSetUnit",OnTooltipSetUnit);
+      tip:HookScript("OnTooltipSetSpell",OnTooltipSetSpell);
+      hooksecurefunc(tip, "SetUnitAura", SetUnitAura);
       tip:HookScript("OnTooltipCleared",OnTooltipCleared);
     end
   end
@@ -177,16 +223,125 @@ SniperTips.frame:RegisterEvent("VARIABLES_LOADED");
 
 -- Other Addon Stuff
 
-function SniperTips:HandleItem(self,link,linkType,id)
+function SniperTips:GetProfile()
+  local config = _G['SniperTips_Config']
+  return config:GetProfile()
+end
+
+-- Tooltip Handlers
+
+function SniperTips:HandleItem(self, link, linkType, id)
   local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
   itemEquipLoc, itemIcon, itemSellPrice, itemClassID, itemSubClassID, bindType, expacID, itemSetID,
   isCraftingReagent = GetItemInfo(link);
 
+  local item = {
+    id = id,
+    name = itemName,
+    link = itemLink,
+    rarity = itemRarity,
+    ilvl = itemLevel,
+    minLevel = itemMinLevel,
+    stackCount = itemStackCount,
+    type = itemType,
+    subType = itemSubType,
+    equipLoc = itemEquipLoc,
+    icon = itemIcon,
+    sellPrice = itemSellPrice,
+    classID = itemClassID,
+    subClassID = itemSubClassID,
+    bindType = bindType,
+    expacID = expacID,
+    setId = itemSetID,
+    reagent = isCraftingReagent
+  }
+
+  local config = SniperTips:GetProfile()
+
   for _, addonName in ipairs(SniperTips.handlers.items) do
-    a = LibStub("AceAddon-3.0"):GetAddon(addonName);
-    a:HandleItem(self, itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount,
-    itemEquipLoc, itemIcon, itemSellPrice, itemClassID, itemSubClassID, bindType, expacID, itemSetID, 
-    isCraftingReagent)
-    --handler(GetItemInfo(link))
+    local a = LibStub("AceAddon-3.0"):GetAddon(addonName);
+    a:HandleItem(self, item, config)
+  end
+end
+
+function SniperTips:HandleSpell(self, spell, id)
+  local spellData = {
+    spell = spell,
+    id = id
+  }
+
+  local config = SniperTips:GetProfile()
+
+  for _, addonName in ipairs(SniperTips.handlers.spells) do
+    local a = LibStub("AceAddon-3.0"):GetAddon(addonName);
+    a:HandleSpell(self, spellData, config)
+  end
+end
+
+function SniperTips:HandleUnit(self, unit, name, guid)
+  local config = SniperTips:GetProfile()
+  for _, addonName in ipairs(SniperTips.handlers.units) do
+    local a = LibStub("AceAddon-3.0"):GetAddon(addonName);
+    a:HandleUnit(self, unit, config)
+  end
+end
+
+function SniperTips:IsClassic()
+  if (_G['GetPetHappiness'] ~= nil) then
+    return true
+  end
+  return false
+end
+
+function SniperTips:ParseAura(unit, index)
+  local isClassic = SniperTips:IsClassic()
+  local aura = { UnitAura(unit, index) }
+  local buff = {
+    unit = unit,
+    index = index,
+    spell = {}
+  }
+
+  buff.name = aura[1]
+
+  if (isClassic) then
+    --buff.name = select(1, auras)
+  else
+    buff.icon = aura[2]
+    buff.count = aura[3]
+    buff.type = aura[4]
+    buff.duration = aura[5]
+    buff.expirationTime = aura[6]
+    buff.source = aura[7]
+    buff.isStealable = aura[8]
+    buff.nameplateShowPersonal = aura[9]
+    buff.spell.id = aura[10]
+    buff.canApplyAura = aura[11]
+    buff.isBossDebuff = aura[12]
+    buff.castByPlayer = aura[13]
+    buff.nameplateShowAll = aura[14]
+    buff.timeMod = aura[15]
+  end
+
+  return buff
+end
+
+function SniperTips:HandleBuff(self, unit, index)
+  local config = SniperTips:GetProfile()
+  local buff = SniperTips:ParseAura(unit, index)
+
+  for _, addonName in ipairs(SniperTips.handlers.buffs) do
+    local a = LibStub("AceAddon-3.0"):GetAddon(addonName);
+    a:HandleBuff(self, buff, config)
+  end
+end
+
+function SniperTips:HandleDebuff(self, unit, index)
+  local config = SniperTips:GetProfile()
+  local debuff = SniperTips:ParseAura(unit, index)
+
+  for _, addonName in ipairs(SniperTips.handlers.debuffs) do
+    local a = LibStub("AceAddon-3.0"):GetAddon(addonName);
+    a:HandleDebuff(self, debuff, config)
   end
 end

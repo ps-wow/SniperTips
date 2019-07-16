@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v2.0.0] - 2019-07-14
+### Added
+ - Add ace configuration
+ - Add handling of spell and unit tooltips
+
+### Changed
+ - Change way item handlers are registered, instead of passing lots of params pass just self and item/spell/unit
+
+
 ## [v1.0.3] - 2019-06-24
 ### Changed
  - Ace3 dependency moved to optional.
