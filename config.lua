@@ -10,7 +10,7 @@ local defaults = {
 
 function SniperTipsConfig:OnInitialize()
   -- Register AceDB with defaults
-  self.db = LibStub("AceDB-3.0"):New("SniperTips_DB", defaults)
+  self.db = LibStub("AceDB-3.0"):New("SniperTips_DB", defaults, true)
 
   -- AceDBOptions
   local options = {
@@ -62,6 +62,11 @@ end
 function SniperTipsConfig:GetProfile()
   local profile = self.db:GetCurrentProfile()
   local config = self.db.profiles[profile]
+
+  if (not config) then
+    config = {}
+  end
+
   for k,v in pairs(defaults.profile) do
     if (not config[k]) then
       config[k] = v
