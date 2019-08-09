@@ -57,6 +57,7 @@ end
 
 function SniperTips_Core:HandleDebuff(self, debuff, config)
   if (self.AddDoubleLine ~= nil) then
+    SniperTips_Core:Dump('debuff', debuff)
     if (config.showIds == true) then
       local r,g,b = SniperTips_Core:GetTipColour(config)
       self:AddLine('Spell ID: '.. debuff.spell.id, r,g,b)

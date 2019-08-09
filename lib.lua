@@ -305,7 +305,12 @@ function SniperTips:ParseAura(unit, index)
   buff.name = aura[1]
 
   if (isClassic) then
-    --buff.name = select(1, auras)
+    buff.type = aura[4]
+    buff.duration = aura[5]
+    buff.expirationTime = aura[6]
+    buff.source = aura[7]
+    buff.spell.id = aura[10]
+    
   else
     buff.icon = aura[2]
     buff.count = aura[3]
