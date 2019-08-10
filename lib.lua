@@ -104,11 +104,12 @@ end
 local function SetUnitAura(self,unit,index,filter)
   if (not tipDataAdded[self]) then
     if (filter == 'HELPFUL') then
-      SniperTips:HandleBuff(self, unit, index)
+      SniperTips:HandleBuff(self, unit, index, filter)
     elseif (filter == 'PASSIVE') then
       SniperTips:Dump('handling passive', true)
     else
-      SniperTips:HandleDebuff(self, unit, index)
+      SniperTips:Dump('filter', filter)
+      SniperTips:HandleDebuff(self, unit, index, filter)
     end
   end
 end
@@ -293,9 +294,9 @@ function SniperTips:IsClassic()
   return false
 end
 
-function SniperTips:ParseAura(unit, index)
+function SniperTips:ParseAura(unit, index, filter)
   local isClassic = SniperTips:IsClassic()
-  local aura = { UnitAura(unit, index) }
+  local aura = { UnitAura(unit, index, filter) }
   local buff = {
     unit = unit,
     index = index,
@@ -331,9 +332,9 @@ function SniperTips:ParseAura(unit, index)
   return buff
 end
 
-function SniperTips:HandleBuff(self, unit, index)
+function SniperTips:HandleBuff(self, unit, index, filter)
   local config = SniperTips:GetProfile()
-  local buff = SniperTips:ParseAura(unit, index)
+  local buff = SniperTips:ParseAura(unit, index, filter)
 
   for _, addonName in ipairs(SniperTips.handlers.buffs) do
     local a = LibStub("AceAddon-3.0"):GetAddon(addonName);
@@ -341,9 +342,9 @@ function SniperTips:HandleBuff(self, unit, index)
   end
 end
 
-function SniperTips:HandleDebuff(self, unit, index)
+function SniperTips:HandleDebuff(self, unit, index, filter)
   local config = SniperTips:GetProfile()
-  local debuff = SniperTips:ParseAura(unit, index)
+  local debuff = SniperTips:ParseAura(unit, index, filter)
 
   for _, addonName in ipairs(SniperTips.handlers.debuffs) do
     local a = LibStub("AceAddon-3.0"):GetAddon(addonName);
