@@ -24,7 +24,7 @@ SniperTips.handlers.buffs = SniperTips.handlers.buffs or {}
 SniperTips.handlers.debuffs = SniperTips.handlers.debuffs or {}
 
 if not SniperTips.frame then
-  SniperTips.frame=CreateFrame("Frame", SniperTips)
+  SniperTips.frame = CreateFrame("Frame", SniperTips)
 end
 
 local tooltipTypes = {
@@ -107,9 +107,10 @@ local function SetUnitAura(self,unit,index,filter)
       SniperTips:HandleBuff(self, unit, index, filter)
     elseif (filter == 'PASSIVE') then
       SniperTips:Dump('handling passive', true)
-    else
-      SniperTips:Dump('filter', filter)
+    elseif (filter == 'HARMFUL') then
       SniperTips:HandleDebuff(self, unit, index, filter)
+    else
+      SniperTips:Dump('handling passive', true)
     end
   end
 end
@@ -217,8 +218,6 @@ SniperTips.frame:SetScript("OnEvent",function(self,event,...)
   SniperTips.frame:UnregisterAllEvents();
   SniperTips.frame:SetScript("OnEvent",nil);
 end);
-
-SniperTips.frame:SetScript("OnUpdate", OnUpdate);
 
 SniperTips.frame:RegisterEvent("VARIABLES_LOADED");
 

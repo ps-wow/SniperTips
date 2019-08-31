@@ -48,7 +48,6 @@ function SniperTips_Core:HandleBuff(self, buff, config)
   if (self.AddDoubleLine ~= nil) then
     if (config.showIds == true) then
       local r,g,b = SniperTips_Core:GetTipColour(config)
-      SniperTips_Core:Dump('spellid', buff.spell.id)
       self:AddLine('Spell ID: ' .. buff.spell.id, r,g,b)
     end
   end
